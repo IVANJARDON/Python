@@ -1,0 +1,17 @@
+En la terminal:
+
+sudo easy_install pip
+pip install virtualenv
+virtualenv python_programs -p python3
+source python_programs/bin/activate
+jupiter notebook
+
+pip install pandas
+pip install numpy
+pip install seaborn
+pip install math
+pip install geopandas
+pip install SciPy
+pip install scikit-learn
+
+--YA EN JUPITER
