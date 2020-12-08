@@ -14,4 +14,21 @@ pip install geopandas
 pip install SciPy
 pip install scikit-learn
 
---YA EN JUPITER
+--Segun datacamp
+entrar a pip.readthedocs.org/en/stable/installing/
+en terminal:
+get-pip.py
+pip3  install numpy
+
+--YA EN JUPITER importamos y se le peude colocar un alias 
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+--Utilizar una funcion
+np.array([1,2,3])
+
+--Si solo quisieramos una función
+from numpy install array
+array([1,2,3]) --Se puede omitir el Alias
