@@ -32,3 +32,48 @@ np.array([1,2,3])
 #Si solo quisieramos una función
 from numpy install array
 array([1,2,3]) #Se puede omitir el Alias
+
+#Ejemplo de convertir lista en array
+# height is available as a regular list
+
+# Import numpy
+import numpy as np
+
+# Create a numpy array from height_in: np_height_in
+np_height_in=np.array(height_in)
+
+# Print out np_height_in
+print(np_height_in)
+
+# Convert np_height_in to m: np_height_m
+np_height_m=np_height_in*0.0254
+
+# Print np_height_m
+print(np_height_m)
+
+#SHAPE
+# Create a 2D numpy array from baseball: np_baseball
+np_baseball=np.array(baseball)
+
+# Print out the shape of np_baseball
+print(np_baseball.shape)
+
+#Otro ejemplo
+# baseball is available as a regular list of lists
+# updated is available as 2D numpy array
+
+# Import numpy package
+import numpy as np
+
+# Create np_baseball (3 cols)
+np_baseball = np.array(baseball)
+
+# Print out addition of np_baseball and updated
+print(np_baseball+updated)
+
+# Create numpy array: conversion
+conversion=np.array([0.0254,0.453592,1])
+
+# Print out product of np_baseball and conversion
+print(conversion*np_baseball)
+
