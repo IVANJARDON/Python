@@ -1,4 +1,4 @@
-En la terminal:
+#En la terminal:
 
 sudo easy_install pip
 pip install virtualenv
@@ -14,21 +14,21 @@ pip install geopandas
 pip install SciPy
 pip install scikit-learn
 
---Segun datacamp
+#Segun datacamp
 entrar a pip.readthedocs.org/en/stable/installing/
 en terminal:
 get-pip.py
 pip3  install numpy
 
---YA EN JUPITER importamos y se le peude colocar un alias 
+#Ya en JUPITER importamos y se le peude colocar un alias 
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
---Utilizar una funcion
+#Utilizar una funcion
 np.array([1,2,3])
 
---Si solo quisieramos una función
+#Si solo quisieramos una función
 from numpy install array
-array([1,2,3]) --Se puede omitir el Alias
+array([1,2,3]) #Se puede omitir el Alias
