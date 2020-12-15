@@ -3,8 +3,12 @@
 sudo easy_install pip
 pip install virtualenv
 virtualenv python_programs -p python3
+
+python3 -m pip install --upgrade pip
+python3 -m pip install jupyter
+
 source python_programs/bin/activate
-jupiter notebook
+jupyter notebook
 
 pip install pandas
 pip install numpy
