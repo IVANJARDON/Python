@@ -1,0 +1,158 @@
+When you get a new DataFrame to work with, the first thing you need to do is explore it and see what it contains. There are several useful methods and attributes for this.
+
+.head() returns the first few rows (the “head” of the DataFrame).
+.info() shows information on each of the columns, such as the data type and number of missing values.
+.shape returns the number of rows and columns of the DataFrame. #Es un atributo, no un metodo
+.describe() calculates a few summary statistics for each column.
+----------------------------
+# Print the head of the homelessness data
+print(homelessness.head())
+
+# Print information about homelessness
+print(homelessness.info())
+
+# Print the shape of homelessness
+print(homelessness.shape)
+
+# Print a description of homelessness
+print(homelessness.describe())
+----------------------------
+To better understand DataFrame objects, it's useful to know that they consist of three components, stored as attributes:
+
+.values: A two-dimensional NumPy array of values.
+.columns: An index of columns: the column names.
+.index: An index for the rows: either row numbers or row names.
+--------------------------
+# Import pandas using the alias pd
+import pandas as pd
+
+# Print the values of homelessness
+print(homelessness.values)
+
+# Print the column index of homelessness
+print(homelessness.columns)
+
+# Print the row index of homelessness
+print(homelessness.index)
+---------------------------
+
+Finding interesting bits of data in a DataFrame is often easier if you change the order of the rows. You can sort the rows by passing a column name to .sort_values().
+
+In cases where rows have the same value (this is common if you sort on a categorical variable), you may wish to break the ties by sorting on another column. You can sort on multiple columns in this way by passing a list of column names.
+
+Sort on …	Syntax
+one column	df.sort_values("breed")
+multiple columns	df.sort_values(["breed", "weight_kg"])
+
+----------------------------
+# Sort homelessness by individual
+homelessness_ind = homelessness.sort_values("individuals")
+
+# Print the top few rows
+print(homelessness_ind.head())
+
+# Sort homelessness by descending family members
+homelessness_fam = homelessness.sort_values("family_members",ascending=False)
+
+# Print the top few rows
+print(homelessness_fam.head())
+
+# Sort homelessness by region, then descending family members
+homelessness_reg_fam = homelessness.sort_values(["region","family_members"],ascending=[True,False])
+
+# Print the top few rows
+print(homelessness_reg_fam.head())
+
+------------------------------
+When working with data, you may not need all of the variables in your dataset. Square brackets ([]) can be used to select only the columns that matter to you in an order that makes sense to you. To select only "col_a" of the DataFrame df, use
+
+df["col_a"]
+To select "col_a" and "col_b" of df, use
+
+df[["col_a", "col_b"]]
+
+-----------------------------
+# Select the state and family_members columns
+state_fam = homelessness[["state","family_members"]]
+
+# Print the head of the result
+print(state_fam.head())
+
+-------------------------------
+Subsetting rows
+A large part of data science is about finding which bits of your dataset are interesting. One of the simplest techniques for this is to find a subset of rows that match some criteria. This is sometimes known as filtering rows or selecting rows.
+
+There are many ways to subset a DataFrame, perhaps the most common is to use relational operators to return True or False for each row, then pass that inside square brackets.
+
+dogs[dogs["height_cm"] > 60]
+dogs[dogs["color"] == "tan"]
+You can filter for multiple conditions at once by using the "bitwise and" operator, &.
+
+dogs[(dogs["height_cm"] > 60) & (dogs["color"] == "tan")]
+
+-------------------------
+# Filter for rows where region is Mountain
+mountain_reg = homelessness[homelessness["region"]=="Mountain"]
+
+# See the result
+print(mountain_reg)
+
+# Filter for rows where family_members is less than 1000 
+# and region is Pacific
+fam_lt_1k_pac = homelessness[(homelessness["family_members"]<1000) & (homelessness["region"]=="Pacific")]
+
+# See the result
+print(fam_lt_1k_pac)
+-----------------------
+Subsetting rows by categorical variables
+Subsetting data based on a categorical variable often involves using the "or" operator (|) to select rows from multiple categories. This can get tedious when you want all states in one of three different regions, for example. Instead, use the .isin() method, which will allow you to tackle this problem by writing one condition instead of three separate ones.
+
+colors = ["brown", "black", "tan"]
+condition = dogs["color"].isin(colors)
+dogs[condition]
+----------------------
+# Subset for rows in South Atlantic or Mid-Atlantic regions
+south_mid_atlantic = homelessness[homelessness["region"].isin(["South Atlantic","Mid-Atlantic"])]
+
+# See the result
+print(south_mid_atlantic)
+
+# The Mojave Desert states
+canu = ["California", "Arizona", "Nevada", "Utah"]
+
+# Filter for rows in the Mojave Desert states
+mojave_homelessness = homelessness[homelessness["state"].isin(canu)]
+
+# See the result
+print(mojave_homelessness)
+
+----------------------
+Adding columns
+
+# Add total col as sum of individuals and family_members
+homelessness["total"]=homelessness["individuals"]+homelessness["family_members"]
+
+# Add p_individuals col as proportion of individuals
+homelessness["p_individuals"]=homelessness["individuals"]/homelessness["total"]
+
+# See the result
+print(homelessness)
+
+
+----------------
+ALL TOGETHER
+# Create indiv_per_10k col as homeless individuals per 10k state pop
+homelessness["indiv_per_10k"] = 10000 * homelessness["individuals"] / homelessness["state_pop"] 
+
+# Subset rows for indiv_per_10k greater than 20
+high_homelessness = homelessness[homelessness["indiv_per_10k"]>20]
+
+# Sort high_homelessness by descending indiv_per_10k
+high_homelessness_srt = high_homelessness.sort_values("indiv_per_10k",ascending=False)
+
+# From high_homelessness_srt, select the state and indiv_per_10k cols
+result = high_homelessness_srt[["state","indiv_per_10k"]]
+
+# See the result
+print(result)
+
