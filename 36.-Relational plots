@@ -1,0 +1,47 @@
+# Change this scatter plot to arrange the plots in rows instead of columns
+sns.relplot(x="absences", y="G3", 
+            data=student_data,
+            kind="scatter", 
+            row="study_time") #or col depending on what you want 
+
+# Show plot
+plt.show()
+
+----------------------
+# Adjust further to add subplots based on family support
+sns.relplot(x="G1", y="G3", 
+            data=student_data,
+            kind="scatter", 
+            col="schoolsup",
+            col_order=["yes", "no"],row='famsup',row_order=["yes", "no"])
+
+# Show plot
+plt.show()
+
+---------------
+
+# Import Matplotlib and Seaborn
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Create scatter plot of horsepower vs. mpg
+sns.relplot(x="horsepower", y="mpg", 
+            data=mpg, kind="scatter", 
+            size="cylinders",hue='cylinders')
+
+# Show plot
+plt.show()
+
+-----------
+
+# Import Matplotlib and Seaborn
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Create a scatter plot of acceleration vs. mpg
+
+sns.relplot(x='acceleration',y='mpg',data=mpg,kind='scatter',style='origin',hue='origin')
+
+
+# Show plot
+plt.show()
