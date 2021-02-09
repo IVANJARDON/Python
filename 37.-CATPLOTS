@@ -52,3 +52,75 @@ plt.show()
 
 
 ------------------
+
+
+# Specify the category ordering
+study_time_order = ["<2 hours", "2 to 5 hours", 
+                    "5 to 10 hours", ">10 hours"]
+
+# Create a box plot and set the order of the categories
+sns.catplot(x='study_time',y='G3',data=student_data,kind='box',order=study_time_order)
+
+# Show plot
+plt.show()
+
+---------------
+# Create a box plot with subgroups and omit the outliers
+
+sns.catplot(x='internet',y='G3',data=student_data,kind='box',hue='location',sym='')
+
+# Show plot
+plt.show()
+----------
+# Extend the whiskers to the 5th and 95th percentile
+sns.catplot(x="romantic", y="G3",
+            data=student_data,
+            kind="box",
+            whis=0.5)
+
+# Show plot
+plt.show()
+
+-----------
+# Extend the whiskers to the 5th and 95th percentile
+sns.catplot(x="romantic", y="G3",
+            data=student_data,
+            kind="box",
+            whis=[5,95])
+
+# Show plot
+plt.show()
+------------
+# Set the whiskers at the min and max values
+sns.catplot(x="romantic", y="G3",
+            data=student_data,
+            kind="box",
+            whis=[0, 100])
+
+# Show plot
+plt.show()
+
+-------------
+
+# Remove the lines joining the points
+sns.catplot(x="famrel", y="absences",
+			data=student_data,
+            kind="point",
+            capsize=0.2,join=False)
+            
+# Show plot
+plt.show()
+
+----------
+# Import median function from numpy
+from numpy import median
+
+# Plot the median number of absences instead of the mean
+sns.catplot(x="romantic", y="absences",
+			data=student_data,
+            kind="point",
+            hue="school",
+            ci=None,estimator=median)
+
+# Show plot
+plt.show()
