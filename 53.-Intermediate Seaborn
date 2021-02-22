@@ -7,3 +7,205 @@ import matplotlib.pyplot as plt
 df = pd.read_csv(grant_file)
 
 -------------
+# Display pandas histogram
+df['Award_Amount'].plot.hist()
+plt.show()
+
+# Clear out the pandas histogram
+plt.clf()
+
+----
+# Display a Seaborn distplot
+sns.distplot(df['Award_Amount'])
+plt.show()
+
+# Clear the distplot
+plt.clf()
+--------
+# Create a distplot
+sns.distplot(df['Award_Amount'],
+             kde=False,
+             bins=20)
+
+# Display the plot
+plt.show()
+--------
+# Create a distplot of the Award Amount
+sns.distplot(df['Award_Amount'],
+             hist=False,
+             rug=True,
+             kde_kws={'shade':True})
+
+# Plot the results
+plt.show()
+
+-------
+# Create a regression plot of premiums vs. insurance_losses
+sns.regplot(x='insurance_losses',y='premiums',data=df)
+
+
+# Display the plot
+plt.show()
+------
+# Create an lmplot of premiums vs. insurance_losses
+sns.lmplot(x='insurance_losses',y='premiums',data=df)
+
+
+
+# Display the second plot
+plt.show()
+------
+# Create a regression plot using hue
+sns.lmplot(data=df,
+           x="insurance_losses",
+           y="premiums",
+           hue="Region")
+
+# Show the results
+plt.show()
+-----
+# Create a regression plot with multiple rows
+sns.lmplot(data=df,
+           x="insurance_losses",
+           y="premiums",
+           row="Region")
+
+# Show the plot
+plt.show()
+
+------
+# Plot the pandas histogram
+df['fmr_2'].plot.hist()
+plt.show()
+plt.clf()
+
+# Set the default seaborn style
+sns.set()
+
+# Plot the pandas histogram again
+df['fmr_2'].plot.hist()
+plt.show()
+plt.clf()
+-------
+sns.set_style('whitegrid')
+sns.distplot(df['fmr_2'])
+plt.show()
+plt.clf()
+----------
+# Set the style to white
+sns.set_style('white')
+
+# Create a regression plot
+sns.lmplot(data=df,
+           x='pop2010',
+           y='fmr_2')
+plt.show()
+
+# Remove the spines
+sns.despine(left=True)
+
+# Show the plot and clear the figure
+plt.show()
+plt.clf()
+--------
+# Set style, enable color code, and create a magenta distplot
+sns.set(color_codes=True)
+sns.distplot(df['fmr_3'], color='m')
+
+# Show the plot
+plt.show()
+--------
+# Loop through differences between bright and colorblind palettes
+for p in ['bright', 'colorblind']:
+    sns.set_palette(p)
+    sns.distplot(df['fmr_3'])
+    plt.show()
+    
+    # Clear the plots    
+    plt.clf()
+    
+----------
+# Set style, enable color code, and create a magenta distplot
+sns.set(color_codes=True)
+sns.distplot(df['fmr_3'], color='m')
+
+# Show the plot
+plt.show()
+----------
+# Loop through differences between bright and colorblind palettes
+for p in ['bright', 'colorblind']:
+    sns.set_palette(p)
+    sns.distplot(df['fmr_3'])
+    plt.show()
+    
+    # Clear the plots    
+    plt.clf()
+  --------
+  
+sns.palplot(sns.color_palette('Purples',8))
+plt.show()
+---------
+sns.palplot(sns.color_palette('husl',10))
+plt.show()
+----------
+sns.palplot(sns.color_palette('coolwarm',6))
+plt.show()
+
+--------
+# Create a figure and axes
+fig, ax = plt.subplots()
+
+# Plot the distribution of data
+sns.distplot(df['fmr_3'], ax=ax)
+
+# Create a more descriptive x axis label
+ax.set(xlabel="3 Bedroom Fair Market Rent")
+
+# Show the plot
+plt.show()
+------------
+# Create a figure and axes
+fig, ax = plt.subplots()
+
+# Plot the distribution of 1 bedroom rents
+sns.distplot(df['fmr_1'], ax=ax)
+
+# Modify the properties of the plot
+ax.set(xlabel="1 Bedroom Fair Market Rent",
+       xlim=(100,1500),
+       title="US Rent")
+
+# Display the plot
+plt.show()
+-------------
+# Create a figure and axes. Then plot the data
+fig, ax = plt.subplots()
+sns.distplot(df['fmr_1'], ax=ax)
+
+# Customize the labels and limits
+ax.set(xlabel="1 Bedroom Fair Market Rent", xlim=(100,1500), title="US Rent")
+
+# Add vertical lines for the median and mean
+import numpy as np
+ax.axvline(x=np.median(df['fmr_1']), color='m', label='Median', linestyle='--', linewidth=2)
+ax.axvline(x=np.mean(df['fmr_1']), color='b', label='Mean', linestyle='-', linewidth=2)
+
+# Show the legend and plot the data
+ax.legend()
+plt.show()
+
+-----------
+FINAL
+# Create a plot with 1 row and 2 columns that share the y axis label
+fig, (ax0, ax1) = plt.subplots(nrows=1, ncols=2, sharey=True)
+
+# Plot the distribution of 1 bedroom apartments on ax0
+sns.distplot(df['fmr_1'], ax=ax0)
+ax0.set(xlabel="1 Bedroom Fair Market Rent", xlim=(100,1500))
+
+# Plot the distribution of 2 bedroom apartments on ax1
+sns.distplot(df['fmr_2'], ax=ax1)
+ax1.set(xlabel="2 Bedroom Fair Market Rent", xlim=(100,1500))
+
+# Display the plot
+plt.show()
