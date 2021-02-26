@@ -59,6 +59,9 @@ inconsistent_ages = banking[~age_equ]
 # Store consistent and inconsistent data
 print("Number of inconsistent ages: ", inconsistent_ages.shape[0])
 ------------
+
+#Completeness
+
 import missingno as msno
 import matplotlib.pyplot as plt
 
