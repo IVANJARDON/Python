@@ -1,0 +1,131 @@
+# Import datetime, timezone
+from datetime import datetime, timezone
+
+# October 1, 2017 at 15:26:26, UTC
+dt = datetime(2017, 10, 1, 15, 26, 26, tzinfo=timezone.utc)
+
+# Print results
+print(dt.isoformat())
+-------------
+# Import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone
+
+# Create a timezone for Pacific Standard Time, or UTC-8
+pst = timezone(timedelta(hours=-8))
+
+# October 1, 2017 at 15:26:26, UTC-8
+dt = datetime(2017, 10, 1, 15, 26, 26, tzinfo=pst)
+
+# Print results
+print(dt.isoformat())
+-----------
+# Import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone
+
+# Create a timezone for Australian Eastern Daylight Time, or UTC+11
+aedt = timezone(timedelta(hours=11))
+
+# October 1, 2017 at 15:26:26, UTC+11
+dt = datetime(2017, 10, 1, 15, 26, 26, tzinfo=aedt)
+
+# Print results
+print(dt.isoformat())
+------------
+# Create a timezone object corresponding to UTC-4
+edt = timezone(timedelta(hours=-4))
+
+# Loop over trips, updating the start and end datetimes to be in UTC-4
+for trip in onebike_datetimes[:10]:
+  # Update trip['start'] and trip['end']
+  trip['start'] = trip['start'].replace(tzinfo=edt)
+  trip['end'] = trip['end'].replace(tzinfo=edt)
+  
+-------------
+# Loop over the trips
+for trip in onebike_datetimes[:10]:
+  # Pull out the start
+  dt = trip['start']
+  # Move dt to be in UTC
+  dt = dt.astimezone(timezone.utc)
+  
+  # Print the start time in UTC
+  print('Original:', trip['start'], '| UTC:', dt.isoformat())
+  
+Original: 2017-10-01 15:23:25-04:00 | UTC: 2017-10-01T19:23:25+00:00
+Original: 2017-10-01 15:42:57-04:00 | UTC: 2017-10-01T19:42:57+00:00
+Original: 2017-10-02 06:37:10-04:00 | UTC: 2017-10-02T10:37:10+00:00
+Original: 2017-10-02 08:56:45-04:00 | UTC: 2017-10-02T12:56:45+00:00
+Original: 2017-10-02 18:23:48-04:00 | UTC: 2017-10-02T22:23:48+00:00
+Original: 2017-10-02 18:48:08-04:00 | UTC: 2017-10-02T22:48:08+00:00
+Original: 2017-10-02 19:18:10-04:00 | UTC: 2017-10-02T23:18:10+00:00
+Original: 2017-10-02 19:37:32-04:00 | UTC: 2017-10-02T23:37:32+00:00
+Original: 2017-10-03 08:24:16-04:00 | UTC: 2017-10-03T12:24:16+00:00
+Original: 2017-10-03 18:17:07-04:00 | UTC: 2017-10-03T22:17:07+00:00
+-----------
+# Import tz
+from dateutil import tz
+
+# Create a timezone object for Eastern Time
+et = tz.gettz('America/New_York')
+
+# Loop over trips, updating the datetimes to be in Eastern Time
+for trip in onebike_datetimes[:10]:
+  # Update trip['start'] and trip['end']
+  trip['start'] = trip['start'].replace(tzinfo=et)
+  trip['end'] = trip['end'].replace(tzinfo=et)
+  
+  [{'end': datetime.datetime(2017, 10, 1, 11, 26, 26, tzinfo=tzfile('US/Eastern')),
+  'start': datetime.datetime(2017, 10, 1, 11, 23, 25, tzinfo=tzfile('US/Eastern'))},
+ {'end': datetime.datetime(2017, 10, 1, 13, 49, 59, tzinfo=tzfile('US/Eastern')),
+  'start': datetime.datetime(2017, 10, 1, 11, 42, 57, tzinfo=tzfile('US/Eastern'))},
+ {'end': datetime.datetime(2017, 10, 2, 2, 42, 53, tzinfo=tzfile('US/Eastern')),
+  'start': datetime.datetime(2017, 10, 2, 2, 37, 10, tzinfo=tzfile('US/Eastern'))},
+ {'end': datetime.datetime(2017, 10, 2, 5, 18, 3, tzinfo=tzfile('US/Eastern')),
+  'start': datetime.datetime(2017, 10, 2, 4, 56, 45, tzinfo=tzfile('US/Eastern'))},
+ {'end': datetime.datetime(2017, 10, 2, 14, 45, 5, tzinfo=tzfile('US/Eastern')),
+  'start': datetime.datetime(2017, 10, 2, 14, 23, 48, tzinfo=tzfile('US/Eastern'))},
+ {'end': datetime.datetime(2017, 10, 2, 15, 10, 54, tzinfo=tzfile('US/Eastern')),
+  'start': datetime.datetime(2017, 10, 2, 14, 48, 8, tzinfo=tzfile('US/Eastern'))},
+ {'end': datetime.datetime(2017, 10, 2, 15, 31, 45, tzinfo=tzfile('US/Eastern')),
+  'start': datetime.datetime(2017, 10, 2, 15, 18, 10, tzinfo=tzfile('US/Eastern'))},
+ {'end': datetime.datetime(2017, 10, 2, 15, 46, 37, tzinfo=tzfile('US/Eastern')),
+  'start': datetime.datetime(2017, 10, 2, 15, 37, 32, tzinfo=tzfile('US/Eastern'))},
+ {'end': datetime.datetime(2017, 10, 3, 4, 32, 27, tzinfo=tzfile('US/Eastern')),
+  'start': datetime.datetime(2017, 10, 3, 4, 24, 16, tzinfo=tzfile('US/Eastern'))},
+ {'end': datetime.datetime(2017, 10, 3, 14, 27, 46, tzinfo=tzfile('US/Eastern')),
+  'start': datetime.datetime(2017, 10, 3, 14, 17, 7, tzinfo=tzfile('US/Eastern'))}]
+  
+  
+  ----------
+  
+  When you need to move a datetime from one timezone into another, use .astimezone() and tz.
+  
+  # Create the timezone object
+uk = tz.gettz('Europe/London')
+
+# Pull out the start of the first trip
+local = onebike_datetimes[0]['start']
+
+# What time was it in the UK?
+notlocal = local.astimezone(uk)
+
+# Print them out and see the difference
+print(local.isoformat())
+print(notlocal.isoformat())
+------
+# Create the timezone object
+ist = tz.gettz('Asia/Kolkata')
+
+# Pull out the start of the first trip
+local = onebike_datetimes[0]['start']
+
+# What time was it in India?
+notlocal = local.astimezone(ist)
+
+# Print them out and see the difference
+print(local.isoformat())
+print(notlocal.isoformat())
+
+2017-10-01T15:23:25-04:00
+2017-10-02T09:23:25+14:00
+---------
