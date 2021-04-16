@@ -1,0 +1,722 @@
+df.dtypes.value_counts()
+
+# Define the lambda function: categorize_label
+categorize_label = lambda x: x.astype('category')
+
+# Convert df[LABELS] to a categorical type
+df[LABELS] = df[LABELS].apply(categorize_label,axis=0)
+
+# Print the converted dtypes
+print(df[LABELS].dtypes)
+
+-----
+# Import matplotlib.pyplot
+import matplotlib.pyplot as plt
+
+# Calculate number of unique values for each label: num_unique_labels
+num_unique_labels = df[LABELS].apply(pd.Series.nunique)
+
+# Plot number of unique values for each label
+num_unique_labels.plot(kind='bar')
+
+# Label the axes
+plt.xlabel('Labels')
+plt.ylabel('Number of unique values')
+
+# Display the plot
+plt.show()
+------------
+
+import numpy as npdefcompute_log_loss(predicted, actual, eps=1e-14):
+
+""" Computes the logarithmic loss between predicted and
+actual when these are 1D arrays.        
+:param predicted: The predicted probabilities as floats between 0-1        
+:param actual: The actual binary labels. Either 0 or 1.        
+:param eps (optional): log(0) is inf, so we need to offset our                               
+predicted values slightly by eps from 0 or 1. 
+"""    
+
+predicted = np.clip(predicted, eps, 1 - eps)    
+loss = -1 * np.mean(actual * np.log(predicted)+ (1 - actual)* np.log(1 - predicted))
+
+return loss
+
+------------
+# Compute and print log loss for 1st case
+correct_confident_loss = compute_log_loss(correct_confident, actual_labels)
+print("Log loss, correct and confident: {}".format(correct_confident_loss)) 
+
+# Compute log loss for 2nd case
+correct_not_confident_loss = compute_log_loss(correct_not_confident, actual_labels)
+print("Log loss, correct and not confident: {}".format(correct_not_confident_loss)) 
+
+# Compute and print log loss for 3rd case
+wrong_not_confident_loss = compute_log_loss(wrong_not_confident, actual_labels)
+print("Log loss, wrong and not confident: {}".format(wrong_not_confident_loss)) 
+
+# Compute and print log loss for 4th case
+wrong_confident_loss = compute_log_loss(wrong_confident, actual_labels)
+print("Log loss, wrong and confident: {}".format(wrong_confident_loss)) 
+
+# Compute and print log loss for actual labels
+actual_labels_loss = compute_log_loss(actual_labels, actual_labels)
+print("Log loss, actual labels: {}".format(actual_labels_loss)) 
+
+
+
+Log loss, correct and confident: 0.05129329438755058
+Log loss, correct and not confident: 0.4307829160924542
+Log loss, wrong and not confident: 1.049822124498678
+Log loss, wrong and confident: 2.9957322735539904
+Log loss, actual labels: 9.99200722162646e-15
+
+------------------------------
+from warnings import warn
+
+import numpy as np
+import pandas as pd
+
+def multilabel_sample(y, size=1000, min_count=5, seed=None):
+    """ Takes a matrix of binary labels `y` and returns
+        the indices for a sample of size `size` if
+        `size` > 1 or `size` * len(y) if size =< 1.
+        The sample is guaranteed to have > `min_count` of
+        each label.
+    """
+    try:
+        if (np.unique(y).astype(int) != np.array([0, 1])).any():
+            raise ValueError()
+    except (TypeError, ValueError):
+        raise ValueError('multilabel_sample only works with binary indicator matrices')
+
+    if (y.sum(axis=0) < min_count).any():
+        raise ValueError('Some classes do not have enough examples. Change min_count if necessary.')
+
+    if size <= 1:
+        size = np.floor(y.shape[0] * size)
+
+    if y.shape[1] * min_count > size:
+        msg = "Size less than number of columns * min_count, returning {} items instead of {}."
+        warn(msg.format(y.shape[1] * min_count, size))
+        size = y.shape[1] * min_count
+
+    rng = np.random.RandomState(seed if seed is not None else np.random.randint(1))
+
+    if isinstance(y, pd.DataFrame):
+        choices = y.index
+        y = y.values
+    else:
+        choices = np.arange(y.shape[0])
+
+    sample_idxs = np.array([], dtype=choices.dtype)
+
+    # first, guarantee > min_count of each label
+    for j in range(y.shape[1]):
+        label_choices = choices[y[:, j] == 1]
+        label_idxs_sampled = rng.choice(label_choices, size=min_count, replace=False)
+        sample_idxs = np.concatenate([label_idxs_sampled, sample_idxs])
+
+    sample_idxs = np.unique(sample_idxs)
+
+    # now that we have at least min_count of each, we can just random sample
+    sample_count = int(size - sample_idxs.shape[0])
+
+    # get sample_count indices from remaining choices
+    remaining_choices = np.setdiff1d(choices, sample_idxs)
+    remaining_sampled = rng.choice(remaining_choices,
+                                   size=sample_count,
+                                   replace=False)
+
+    return np.concatenate([sample_idxs, remaining_sampled])
+
+
+def multilabel_sample_dataframe(df, labels, size, min_count=5, seed=None):
+    """ Takes a dataframe `df` and returns a sample of size `size` where all
+        classes in the binary matrix `labels` are represented at
+        least `min_count` times.
+    """
+    idxs = multilabel_sample(labels, size=size, min_count=min_count, seed=seed)
+    return df.loc[idxs]
+
+
+def multilabel_train_test_split(X, Y, size, min_count=5, seed=None):
+    """ Takes a features matrix `X` and a label matrix `Y` and
+        returns (X_train, X_test, Y_train, Y_test) where all
+        classes in Y are represented at least `min_count` times.
+    """
+    index = Y.index if isinstance(Y, pd.DataFrame) else np.arange(Y.shape[0])
+
+    test_set_idxs = multilabel_sample(Y, size=size, min_count=min_count, seed=seed)
+    train_set_idxs = np.setdiff1d(index, test_set_idxs)
+
+    test_set_mask = index.isin(test_set_idxs)
+    train_set_mask = ~test_set_mask
+
+    return (X[train_set_mask], X[test_set_mask], Y[train_set_mask], Y[test_set_mask])
+----------------
+# Create the new DataFrame: numeric_data_only
+numeric_data_only = df[NUMERIC_COLUMNS].fillna(-1000)
+
+# Get labels and convert to dummy variables: label_dummies
+label_dummies = pd.get_dummies(df[LABELS])
+
+# Create training and test sets
+X_train, X_test, y_train, y_test = multilabel_train_test_split(numeric_data_only,
+                                                               label_dummies,
+                                                               size=0.2, 
+                                                               seed=123)
+
+# Print the info
+print("X_train info:")
+print(X_train.info())
+print("\nX_test info:")  
+print(X_test.info())
+print("\ny_train info:")  
+print(y_train.info())
+print("\ny_test info:")  
+print(y_test.info())
+
+---------
+
+# Import classifiers
+from sklearn.linear_model import LogisticRegression
+from sklearn.multiclass import OneVsRestClassifier
+
+# Create the DataFrame: numeric_data_only
+numeric_data_only = df[NUMERIC_COLUMNS].fillna(-1000)
+
+# Get labels and convert to dummy variables: label_dummies
+label_dummies = pd.get_dummies(df[LABELS])
+
+# Create training and test sets
+X_train, X_test, y_train, y_test = multilabel_train_test_split(numeric_data_only,
+                                                               label_dummies,
+                                                               size=0.2, 
+                                                               seed=123)
+
+# Instantiate the classifier: clf
+clf = OneVsRestClassifier(LogisticRegression())
+
+# Fit the classifier to the training data
+clf.fit(X_train,y_train)
+
+# Print the accuracy
+print("Accuracy: {}".format(clf.score(X_test, y_test)))
+
+------------
+# Instantiate the classifier: clf
+clf = OneVsRestClassifier(LogisticRegression())
+
+# Fit it to the training data
+clf.fit(X_train, y_train)
+
+# Load the holdout data: holdout
+holdout = pd.read_csv('HoldoutData.csv',index_col=0)
+
+# Generate predictions: predictions
+predictions = clf.predict_proba(holdout[NUMERIC_COLUMNS].fillna(-1000))
+
+# Format predictions in DataFrame: prediction_df
+prediction_df = pd.DataFrame(columns=pd.get_dummies(df[LABELS]).columns,
+                             index=holdout.index,
+                             data=predictions)
+
+
+# Save prediction_df to csv
+prediction_df.to_csv('predictions.csv')
+
+# Submit the predictions for scoring: score
+score = score_submission(pred_path='predictions.csv')
+
+# Print score
+print('Your model, trained with numeric data only, yields logloss score: {}'.format(score))
+
+--------
+# Import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer 
+
+# Create the token pattern: TOKENS_ALPHANUMERIC
+TOKENS_ALPHANUMERIC = '[A-Za-z0-9]+(?=\\s+)'
+
+# Fill missing values in df.Position_Extra
+df.Position_Extra.fillna('',inplace=True)
+
+# Instantiate the CountVectorizer: vec_alphanumeric
+vec_alphanumeric = CountVectorizer(token_pattern=TOKENS_ALPHANUMERIC)
+
+# Fit to the data
+vec_alphanumeric.fit(df.Position_Extra)
+
+# Print the number of tokens and first 15 tokens
+msg = "There are {} tokens in Position_Extra if we split on non-alpha numeric"
+print(msg.format(len(vec_alphanumeric.get_feature_names())))
+print(vec_alphanumeric.get_feature_names()[:15])
+
+
+
+----------
+
+# Define combine_text_columns()
+def combine_text_columns(data_frame, to_drop=NUMERIC_COLUMNS + LABELS):
+    """ converts all text in each row of data_frame to single vector """
+    
+    # Drop non-text columns that are in the df
+    to_drop = set(to_drop) & set(data_frame.columns.tolist())
+    text_data = data_frame.drop(to_drop, axis=1)
+    
+    # Replace nans with blanks
+    text_data.fillna("", inplace=True)
+    
+    # Join all text items in a row that have a space in between
+    return text_data.apply(lambda x: " ".join(x), axis=1)
+    
+    ----------
+# Import the CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer
+
+# Create the basic token pattern
+TOKENS_BASIC = '\\S+(?=\\s+)'
+
+# Create the alphanumeric token pattern
+TOKENS_ALPHANUMERIC = '[A-Za-z0-9]+(?=\\s+)'
+
+# Instantiate basic CountVectorizer: vec_basic
+vec_basic = CountVectorizer(token_pattern=TOKENS_BASIC)
+
+# Instantiate alphanumeric CountVectorizer: vec_alphanumeric
+vec_alphanumeric = CountVectorizer(token_pattern=TOKENS_ALPHANUMERIC)
+
+# Create the text vector
+text_vector = combine_text_columns(df)
+
+# Fit and transform vec_basic
+vec_basic.fit_transform(text_vector)
+
+# Print number of tokens of vec_basic
+print("There are {} tokens in the dataset".format(len(vec_basic.get_feature_names())))
+
+# Fit and transform vec_alphanumeric
+vec_alphanumeric.fit_transform(text_vector)
+
+# Print number of tokens of vec_alphanumeric
+print("There are {} alpha-numeric tokens in the dataset".format(len(vec_alphanumeric.get_feature_names())))
+---------
+
+# Import Pipeline
+from sklearn.pipeline import Pipeline
+
+# Import other necessary modules
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.multiclass import OneVsRestClassifier
+
+# Split and select numeric data only, no nans 
+X_train, X_test, y_train, y_test = train_test_split(sample_df[['numeric']],
+                                                    pd.get_dummies(sample_df['label']), 
+                                                    random_state=22)
+
+# Instantiate Pipeline object: pl
+pl = Pipeline([
+        ('clf', OneVsRestClassifier(LogisticRegression()))
+    ])
+
+# Fit the pipeline to the training data
+pl.fit(X_train, y_train)
+
+# Compute and print accuracy
+accuracy = pl.score(X_test, y_test)
+print("\nAccuracy on sample data - numeric, no nans: ", accuracy)
+
+----------------
+# Import the Imputer object
+from sklearn.preprocessing import Imputer
+
+# Create training and test sets using only numeric data
+X_train, X_test, y_train, y_test = train_test_split(sample_df[['numeric', 'with_missing']],
+                                                    pd.get_dummies(sample_df['label']), 
+                                                    random_state=456)
+
+# Insantiate Pipeline object: pl
+pl = Pipeline([
+        ('imp', Imputer()),
+        ('clf', OneVsRestClassifier(LogisticRegression()))
+    ])
+
+# Fit the pipeline to the training data
+pl.fit(X_train,y_train)
+
+# Compute and print accuracy
+accuracy = pl.score(X_test,y_test)
+print("\nAccuracy on sample data - all numeric, incl nans: ", accuracy)
+------------
+# Import the CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer
+
+# Split out only the text data
+X_train, X_test, y_train, y_test = train_test_split(sample_df['text'],
+                                                    pd.get_dummies(sample_df['label']), 
+                                                    random_state=456)
+
+# Instantiate Pipeline object: pl
+pl = Pipeline([
+        ('vec', CountVectorizer()),
+        ('clf', OneVsRestClassifier(LogisticRegression()))
+    ])
+
+# Fit to the training data
+pl.fit(X_train,y_train)
+
+# Compute and print accuracy
+accuracy = pl.score(X_test,y_test)
+print("\nAccuracy on sample data - just text data: ", accuracy)
+
+----------------
+# Import FunctionTransformer
+from sklearn.preprocessing import FunctionTransformer
+
+# Obtain the text data: get_text_data
+get_text_data = FunctionTransformer(lambda x: x['text'], validate=False)
+
+# Obtain the numeric data: get_numeric_data
+get_numeric_data = FunctionTransformer(lambda x: x[['numeric', 'with_missing']], validate=False)
+
+# Fit and transform the text data: just_text_data
+just_text_data = get_text_data.fit_transform(sample_df)
+
+# Fit and transform the numeric data: just_numeric_data
+just_numeric_data = get_numeric_data.fit_transform(sample_df)
+
+# Print head to check results
+print('Text Data')
+print(just_text_data.head())
+print('\nNumeric Data')
+print(just_numeric_data.head())
+-----------
+# Import FeatureUnion
+from sklearn.pipeline import FeatureUnion
+
+# Split using ALL data in sample_df
+X_train, X_test, y_train, y_test = train_test_split(sample_df[['numeric', 'with_missing', 'text']],
+                                                    pd.get_dummies(sample_df['label']), 
+                                                    random_state=22)
+
+# Create a FeatureUnion with nested pipeline: process_and_join_features
+process_and_join_features = FeatureUnion(
+            transformer_list = [
+                ('numeric_features', Pipeline([
+                    ('selector', get_numeric_data),
+                    ('imputer', Imputer())
+                ])),
+                ('text_features', Pipeline([
+                    ('selector', get_text_data),
+                    ('vectorizer', CountVectorizer())
+                ]))
+             ]
+        )
+
+# Instantiate nested pipeline: pl
+pl = Pipeline([
+        ('union', process_and_join_features),
+        ('clf', OneVsRestClassifier(LogisticRegression()))
+    ])
+
+
+# Fit pl to the training data
+pl.fit(X_train, y_train)
+
+# Compute and print accuracy
+accuracy = pl.score(X_test, y_test)
+print("\nAccuracy on sample data - all data: ", accuracy)
+
+-----------
+
+# Import FunctionTransformer
+from sklearn.preprocessing import FunctionTransformer
+
+# Get the dummy encoding of the labels
+dummy_labels = pd.get_dummies(df[LABELS])
+
+# Get the columns that are features in the original df
+NON_LABELS = [c for c in df.columns if c not in LABELS]
+
+# Split into training and test sets
+X_train, X_test, y_train, y_test = multilabel_train_test_split(df[NON_LABELS],
+                                                               dummy_labels,
+                                                               0.2, 
+                                                               seed=123)
+
+# Preprocess the text data: get_text_data
+get_text_data = FunctionTransformer(combine_text_columns,validate=False)
+
+# Preprocess the numeric data: get_numeric_data
+get_numeric_data = FunctionTransformer(lambda x: x[NUMERIC_COLUMNS], validate=False)
+
+----------------
+# Complete the pipeline: pl
+pl = Pipeline([
+        ('union', FeatureUnion(
+            transformer_list = [
+                ('numeric_features', Pipeline([
+                    ('selector', get_numeric_data),
+                    ('imputer', Imputer())
+                ])),
+                ('text_features', Pipeline([
+                    ('selector', get_text_data),
+                    ('vectorizer', CountVectorizer())
+                ]))
+             ]
+        )),
+        ('clf', OneVsRestClassifier(LogisticRegression()))
+    ])
+
+# Fit to the training data
+pl.fit(X_train,y_train)
+
+# Compute and print accuracy
+accuracy = pl.score(X_test, y_test)
+print("\nAccuracy on budget dataset: ", accuracy)
+-------------
+
+# Import random forest classifer
+from sklearn.ensemble import RandomForestClassifier
+
+# Edit model step in pipeline
+pl = Pipeline([
+        ('union', FeatureUnion(
+            transformer_list = [
+                ('numeric_features', Pipeline([
+                    ('selector', get_numeric_data),
+                    ('imputer', Imputer())
+                ])),
+                ('text_features', Pipeline([
+                    ('selector', get_text_data),
+                    ('vectorizer', CountVectorizer())
+                ]))
+             ]
+        )),
+        ('clf', RandomForestClassifier())
+    ])
+
+# Fit to the training data
+pl.fit(X_train, y_train)
+
+# Compute and print accuracy
+accuracy = pl.score(X_test, y_test)
+print("\nAccuracy on budget dataset: ", accuracy)
+
+-------
+# Import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier
+
+# Add model step to pipeline: pl
+pl = Pipeline([
+        ('union', FeatureUnion(
+            transformer_list = [
+                ('numeric_features', Pipeline([
+                    ('selector', get_numeric_data),
+                    ('imputer', Imputer())
+                ])),
+                ('text_features', Pipeline([
+                    ('selector', get_text_data),
+                    ('vectorizer', CountVectorizer())
+                ]))
+             ]
+        )),
+        ('clf', RandomForestClassifier(n_estimators=15))
+    ])
+
+# Fit to the training data
+pl.fit(X_train, y_train)
+
+# Compute and print accuracy
+accuracy = pl.score(X_test, y_test)
+print("\nAccuracy on budget dataset: ", accuracy)
+----------
+# Import the CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer
+
+# Create the text vector
+text_vector = combine_text_columns(X_train)
+
+# Create the token pattern: TOKENS_ALPHANUMERIC
+TOKENS_ALPHANUMERIC = '[A-Za-z0-9]+(?=\\s+)'
+
+# Instantiate the CountVectorizer: text_features
+text_features = CountVectorizer(token_pattern=TOKENS_ALPHANUMERIC)
+
+# Fit text_features to the text vector
+text_features.fit(text_vector)
+
+# Print the first 10 tokens
+print(text_features.get_feature_names()[:10])
+-------------
+
+# Import pipeline
+from sklearn.pipeline import Pipeline
+
+# Import classifiers
+from sklearn.linear_model import LogisticRegression
+from sklearn.multiclass import OneVsRestClassifier
+
+# Import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer
+
+# Import other preprocessing modules
+from sklearn.preprocessing import Imputer
+from sklearn.feature_selection import chi2, SelectKBest
+
+# Select 300 best features
+chi_k = 300
+
+# Import functional utilities
+from sklearn.preprocessing import FunctionTransformer, MaxAbsScaler
+from sklearn.pipeline import FeatureUnion
+
+# Perform preprocessing
+get_text_data = FunctionTransformer(combine_text_columns, validate=False)
+get_numeric_data = FunctionTransformer(lambda x: x[NUMERIC_COLUMNS], validate=False)
+
+# Create the token pattern: TOKENS_ALPHANUMERIC
+TOKENS_ALPHANUMERIC = '[A-Za-z0-9]+(?=\\s+)'
+
+# Instantiate pipeline: pl
+pl = Pipeline([
+        ('union', FeatureUnion(
+            transformer_list = [
+                ('numeric_features', Pipeline([
+                    ('selector', get_numeric_data),
+                    ('imputer', Imputer())
+                ])),
+                ('text_features', Pipeline([
+                    ('selector', get_text_data),
+                    ('vectorizer', CountVectorizer(token_pattern=TOKENS_ALPHANUMERIC,
+                                                   ngram_range=(1, 2))),
+                    ('dim_red', SelectKBest(chi2, chi_k))
+                ]))
+             ]
+        )),
+        ('scale', MaxAbsScaler()),
+        ('clf', OneVsRestClassifier(LogisticRegression()))
+    ])
+    
+    -------------
+    
+  
+from itertools import combinations
+
+import numpy as np
+from scipy import sparse
+from sklearn.base import BaseEstimator, TransformerMixin
+
+
+class SparseInteractions(BaseEstimator, TransformerMixin):
+    def __init__(self, degree=2, feature_name_separator="_"):
+        self.degree = degree
+        self.feature_name_separator = feature_name_separator
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        if not sparse.isspmatrix_csc(X):
+            X = sparse.csc_matrix(X)
+
+        if hasattr(X, "columns"):
+            self.orig_col_names = X.columns
+        else:
+            self.orig_col_names = np.array([str(i) for i in range(X.shape[1])])
+
+        spi = self._create_sparse_interactions(X)
+        return spi
+
+    def get_feature_names(self):
+        return self.feature_names
+
+    def _create_sparse_interactions(self, X):
+        out_mat = []
+        self.feature_names = self.orig_col_names.tolist()
+
+        for sub_degree in range(2, self.degree + 1):
+            for col_ixs in combinations(range(X.shape[1]), sub_degree):
+                # add name for new column
+                name = self.feature_name_separator.join(self.orig_col_names[list(col_ixs)])
+                self.feature_names.append(name)
+
+                # get column multiplications value
+                out = X[:, col_ixs[0]]
+                for j in col_ixs[1:]:
+                    out = out.multiply(X[:, j])
+
+                out_mat.append(out)
+
+        return sparse.hstack([X] + out_mat)
+-------------------
+# Instantiate pipeline: pl
+pl = Pipeline([
+        ('union', FeatureUnion(
+            transformer_list = [
+                ('numeric_features', Pipeline([
+                    ('selector', get_numeric_data),
+                    ('imputer', Imputer())
+                ])),
+                ('text_features', Pipeline([
+                    ('selector', get_text_data),
+                    ('vectorizer', CountVectorizer(token_pattern=TOKENS_ALPHANUMERIC,
+                                                   ngram_range=(1, 2))),  
+                    ('dim_red', SelectKBest(chi2, chi_k))
+                ]))
+             ]
+        )),
+        ('int', SparseInteractions(degree=2)),
+        ('scale', MaxAbsScaler()),
+        ('clf', OneVsRestClassifier(LogisticRegression()))
+    ])
+-------------------
+# Import HashingVectorizer
+from sklearn.feature_extraction.text import HashingVectorizer
+
+# Get text data: text_data
+text_data = combine_text_columns(X_train)
+
+# Create the token pattern: TOKENS_ALPHANUMERIC
+TOKENS_ALPHANUMERIC = '[A-Za-z0-9]+(?=\\s+)' 
+
+# Instantiate the HashingVectorizer: hashing_vec
+hashing_vec = HashingVectorizer(token_pattern=TOKENS_ALPHANUMERIC)
+
+# Fit and transform the Hashing Vectorizer
+hashed_text = hashing_vec.fit_transform(text_data)
+
+# Create DataFrame and print the head
+hashed_df = pd.DataFrame(hashed_text.data)
+print(hashed_df.head())
+----------
+# Import the hashing vectorizer
+from sklearn.feature_extraction.text import HashingVectorizer
+
+# Instantiate the winning model pipeline: pl
+pl = Pipeline([
+        ('union', FeatureUnion(
+            transformer_list = [
+                ('numeric_features', Pipeline([
+                    ('selector', get_numeric_data),
+                    ('imputer', Imputer())
+                ])),
+                ('text_features', Pipeline([
+                    ('selector', get_text_data),
+                    ('vectorizer', HashingVectorizer(token_pattern=TOKENS_ALPHANUMERIC,
+                                                     non_negative=True, norm=None, binary=False,
+                                                     ngram_range=(1, 2))),
+                    ('dim_red', SelectKBest(chi2, chi_k))
+                ]))
+             ]
+        )),
+        ('int', SparseInteractions(degree=2)),
+        ('scale', MaxAbsScaler()),
+        ('clf', OneVsRestClassifier(LogisticRegression()))
+    ])
+--------------
+https://github.com/datacamp/course-resources-ml-with-experts-budgets/blob/master/notebooks/1.0-full-model.ipynb
+
+
