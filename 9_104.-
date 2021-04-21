@@ -1,0 +1,58 @@
+# Create data frame of next 500 rows with labeled columns
+vt_data_next500 = pd.read_csv("vt_tax_data_2016.csv", 
+                       		  nrows=500,
+                       		  skiprows=500,
+                       		  header=None,
+                       		  names=vt_data_first500.columns)
+
+# View the Vermont data frames to confirm they're different
+print(vt_data_first500.head())
+print(vt_data_next500.head())
+
+--
+# Create dict specifying data types for agi_stub and zipcode
+data_types = {'agi_stub':"category",
+			  'zipcode':str}
+
+# Load csv using dtype to set correct data types
+data = pd.read_csv("vt_tax_data_2016.csv", dtype=data_types)
+
+# Print data types of resulting frame
+print(data.dtypes.head())
+
+----
+# Create dict specifying that 0s in zipcode are NA values
+null_values = {'zipcode':0}
+
+# Load csv using na_values keyword argument
+data = pd.read_csv("vt_tax_data_2016.csv", 
+                   na_values=null_values)
+
+# View rows with NA ZIP codes
+print(data[data.zipcode.isna()])
+-----
+try:
+  # Set warn_bad_lines to issue warnings about bad records
+  data = pd.read_csv("vt_tax_data_2016_corrupt.csv", 
+                     error_bad_lines=False, 
+                     warn_bad_lines=True)
+  
+  # View first 5 records
+  print(data.head())
+  
+except pd.io.common.CParserError:
+    print("Your data contained rows that could not be parsed.")
+    ------
+    
+    # Create string of lettered columns to load
+col_string = 'AD,AW:BA'
+
+# Load data with skiprows and usecols set
+survey_responses = pd.read_excel("fcc_survey_headers.xlsx", 
+                        skiprows=2, 
+                        usecols=col_string)
+
+# View the names of the columns selected
+print(survey_responses.columns)
+
+---------
