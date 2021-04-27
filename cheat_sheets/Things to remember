@@ -1,0 +1,2 @@
+#Evitar simbolos raros
+df.to_csv(DIR+FILENAME,index=False,sep='\t',encoding='utf-16')
