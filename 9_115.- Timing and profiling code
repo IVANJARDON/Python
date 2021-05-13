@@ -1,0 +1,11 @@
+#TIME
+In [2]:
+%load_ext line_profiler
+In [3]:
+%lprun -f convert_units convert_units(heroes,hts,wts)
+
+------
+#MEMORY
+%load_ext memory_profiler
+from hero_funcs import convert_units
+%mprun -f convert_units convert_units(heroes, hts, wts)
