@@ -1,0 +1,209 @@
+# Import the re module
+import re
+
+# Write the regex
+regex = r"@robot\d\W"
+
+# Find all matches of regex
+print(re.findall(regex, sentiment_analysis))
+
+------
+# Write a regex to obtain user mentions
+print(re.findall(r"User_mentions:\d", sentiment_analysis))
+-----
+# Write a regex to obtain number of likes
+print(re.findall(r"likes:\s\d", sentiment_analysis))
+-----
+# Write a regex to obtain number of retweets
+print(re.findall(r"number\sof\sretweets:\s\d", sentiment_analysis))
+----
+# Write a regex to match pattern separating sentences
+regex_sentence = r"\W\dbreak\W"
+
+# Replace the regex_sentence with a space
+sentiment_sub = re.sub(regex_sentence, " ", sentiment_analysis)
+
+# Write a regex to match pattern separating words
+regex_words = r"\Wnew\w"
+
+# Replace the regex_words and print the result
+sentiment_final = re.sub(regex_words, " ", sentiment_sub)
+print(sentiment_final)
+-------
+# Import re module
+import re
+
+for tweet in sentiment_analysis:
+  	# Write regex to match http links and print out result
+	print(re.findall(r"http\S+", tweet))
+
+	# Write regex to match user mentions and print out result
+	print(re.findall(r"@\w+", tweet))
+---------
+# Complete the for loop with a regex to find dates
+for date in sentiment_analysis:
+	print(re.findall(r"\d{1,2}\s\w+\sago", date))
+  ------
+  # Complete the for loop with a regex to find dates
+for date in sentiment_analysis:
+	print(re.findall(r"\d{1,2}\w+\s\w+\s\d{4}", date))
+  -------
+  # Complete the for loop with a regex to find dates
+for date in sentiment_analysis:
+	print(re.findall(r"\d{1,2}\w+\s\w+\s\d{4}\s\d{1,2}:\d{2}", date))
+  -------
+  # Write a regex matching the hashtag pattern
+regex = r"#\w+"
+
+# Replace the regex by an empty string
+no_hashtag = re.sub(regex, "", sentiment_analysis)
+
+# Get tokens by splitting text
+print(re.split(r"\s+", no_hashtag))
+---------
+
+# Write a regex to match text file name
+regex = r"^[aeiouAEIOU]{2,3}.+txt"
+
+for text in sentiment_analysis:
+	# Find all matches of the regex
+	print(re.findall(regex, text))
+    
+	# Replace all matches with empty string
+	print(re.sub(regex, "", text))
+  
+  ---------
+  # Write a regex to match a valid email address
+regex = r"[a-zA-Z\d*\!#%&*$.]*@.+\.com" #FUNCIONA PERO NO ES CORRECTO
+regex = r"[A-Za-z0-9!#%&*\$\.]+@\w+\.com" #OK
+
+for example in emails:
+  	# Match the regex to the string
+    if re.findall(regex, example):
+        # Complete the format method to print out the result
+      	print("The email {email_example} is a valid email".format(email_example=example))
+    else:
+      	print("The email {email_example} is invalid".format(email_example=example))   
+ ----------
+ # Write a regex to match a valid password
+regex = r"[A-Za-z0-9!#%&*\$\.]{8,20}" 
+regex = r"[a-zA-Z0-9*#\$%!&\.]{8,20}"
+
+
+for example in passwords:
+  	# Scan the strings to find a match
+    if re.search(regex, example):
+        # Complete the format method to print out the result
+      	print("The password {pass_example} is a valid password".format(pass_example=example))
+    else:
+      	print("The password {pass_example} is invalid".format(pass_example=example))   
+----------
+I want to see that <strong>amazing show</strong> again!
+
+# Import re
+import re
+
+# Write a regex to eliminate tags
+string_notags = re.sub(r"<.+?>", "", string)
+
+# Print out the result
+print(string_notags)
+-----    
+# Write a lazy regex expression 
+numbers_found_lazy = re.findall(r"[0-9]+?", sentiment_analysis)
+
+# Print out the result
+print(numbers_found_lazy)
+-----
+# Write a lazy regex expression 
+numbers_found_greedy = re.findall(r"[0-9]+", sentiment_analysis)
+
+# Print out the result
+print(numbers_found_greedy)
+-----
+# Write a greedy regex expression to match 
+sentences_found_greedy = re.findall(r"\(.*\)", sentiment_analysis)
+
+# Print out the result
+print(sentences_found_greedy)
+-----
+# Write a lazy regex expression
+sentences_found_lazy = re.findall(r"\(.*?\)", sentiment_analysis)
+
+# Print out the results
+print(sentences_found_lazy)
+------
+# Write a regex that matches email
+regex_email = r"([a-zA-Z0-9]+)@\S+"
+
+for tweet in sentiment_analysis:
+    # Find all matches of regex in each tweet
+    email_matched = re.findall(regex_email, tweet)
+
+    # Complete the format method to print the results
+    print("Lists of users found in this tweet: {}".format(email_matched))
+-------
+# Import re
+import re
+
+# Write regex to capture information of the flight
+regex = r"([A-Z]{2})(\d{4})\s([A-Z]{3})-([A-Z]{3})\s(\d{2}[A-Z]{3})"
+
+# Find all matches of the flight information
+flight_matches = re.findall(regex, flight)
+    
+#Print the matches
+print("Airline: {} Flight number: {}".format(flight_matches[0][0], flight_matches[0][1]))
+print("Departure: {} Destination: {}".format(flight_matches[0][2], flight_matches[0][3]))
+print("Date: {}".format(flight_matches[0][4]))
+
+'Subject: You are now ready to fly. Here you have your boarding pass IB3723 AMS-MAD 06OCT'
+
+<script.py> output:
+    Airline: IB Flight number: 3723
+    Departure: AMS Destination: MAD
+    Date: 06OCT
+------
+
+# Write a regex that matches sentences with the optional words
+regex_positive = r"(love|like|enjoy).+?(movie|concert)\s(.+?)\."
+
+for tweet in sentiment_analysis:
+	# Find all matches of regex in tweet
+    positive_matches = re.findall(regex_positive, tweet)
+    
+    # Complete format to print out the results
+    print("Positive comments found {}".format(positive_matches))
+
+
+['I totally love the concert The Book of Souls World Tour. It kinda amazing!',
+ 'I enjoy the movie Wreck-It Ralph. I watched with my boyfriend.',
+ "I still like the movie Wish Upon a Star. Too bad Disney doesn't show it anymore."]
+
+<script.py> output:
+    Positive comments found [('love', 'concert', 'The Book of Souls World Tour')]
+    Positive comments found [('enjoy', 'movie', 'Wreck-It Ralph')]
+    Positive comments found [('like', 'movie', 'Wish Upon a Star')]
+    
+    -----
+    
+# Write a regex that matches sentences with the optional words
+regex_negative = r"(hate|dislike|disapprove).+?(?:movie|concert)\s(.+?)\."
+
+for tweet in sentiment_analysis:
+	# Find all matches of regex in tweet
+    negative_matches = re.findall(regex_negative, tweet)
+    
+    # Complete format to print out the results
+    print("Negative comments found {}".format(negative_matches))
+    
+['That was horrible! I really dislike the movie The cabin and the ant. So boring.',
+ "I disapprove the movie Honest with you. It's full of cliches.",
+ 'I dislike very much the concert After twelve Tour. The sound was horrible.']
+
+script.py> output:
+    Negative comments found [('dislike', 'The cabin and the ant')]
+    Negative comments found [('disapprove', 'Honest with you')]
+    Negative comments found [('dislike', 'After twelve Tour')]
+sentiment_analysis
+
