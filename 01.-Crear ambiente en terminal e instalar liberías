@@ -10,6 +10,8 @@ python3 -m pip install jupyter
 source python_programs/bin/activate
 jupyter notebook
 
+python -m notebook #En windows 
+
 pip install pandas
 pip install numpy
 pip install seaborn
