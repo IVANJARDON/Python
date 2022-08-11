@@ -1,0 +1,144 @@
+import ftplib
+import gzip
+import zipfile
+import shutil
+import pandas as pd
+import os
+from os import listdir
+import json
+
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
+from google.cloud import storage
+from google.cloud import bigquery
+
+def infare_data(request):    
+
+#Conectarse al SFTP
+
+    #Open ftp connection
+    ftp = ftplib.FTP(host='ftp.infare.net',user='user', passwd='passwd',timeout=10800)
+
+    #Files in the current directory
+    files = ftp.dir()
+
+    #Obtener archivos del SFTP en el directorio de AirRM
+    path="/AirRM/Archive"
+    ftp.cwd(path)
+    files = []
+    files=[filename for filename in ftp.nlst(path) if filename.endswith('.zip')]
+
+    #Se obtienen los archivos que no estan cargados en Cloud storage
+
+    #Archivos en cloud storage
+    bucket_name="vb-infarecargamanual001"
+
+    storage_client = storage.Client()
+    blobs = storage_client.list_blobs(bucket_name)
+    CloudStorageFiles= [blob.name.replace(".csv", ".zip") for blob in blobs]
+
+    #Archivos pendientes
+    ArchivosPendientes = [file for file in files if file not in CloudStorageFiles] 
+
+    # Ejecución de data transfer y lista de archivos a subir a Cloud storage
+
+    #directory=os.getcwd()
+    #directory
+    os.chdir("/tmp")
+
+
+    #CARGAR LOS ARCHIVOS AL DIRECTORIO "/tmp"
+    for file in ArchivosPendientes:
+        localfile = open(file, 'wb')
+        ftp.retrbinary('RETR ' + file, localfile.write, 1024)
+        localfile.close()
+
+    #ENLISTAR LOS ARCHIVOS .zip
+    zipfiles = [f for f in listdir('/tmp') if f.endswith('.zip')]
+
+    #Desempaquetarlos y borrar archivos .zip
+    for zip_file in zipfiles:
+        with zipfile.ZipFile("/tmp" + "/"+ zip_file, 'r') as zip_ref:
+            zip_ref.extractall("/tmp")
+            os.remove(zip_file)
+
+    #ENLISTAR LOS ARCHIVOS .csv a subir
+    csvtoupload = [f for f in listdir("/tmp") if f.endswith('.csv')]
+    
+    # Subir archivos a Cloud Storage
+    gcs_service = build('storage', 'v1',)
+    bucket_name="vb-infarecargamanual001"
+
+    for f in csvtoupload:
+        name= f
+        media = MediaFileUpload("/tmp"+"/"+ f,resumable=True)
+        request = gcs_service.objects().insert(bucket=bucket_name, 
+                                        name= f,
+                                        media_body=media)
+        response = None
+        while response is None:
+            _, response = request.next_chunk()
+
+    #Crear tabla en Bigquery con archivos de Cloud Storage
+
+    # Construct a BigQuery client object.
+    client = bigquery.Client()
+
+    # TODO(developer): Set table_id to the ID of the table to create.
+    table_id = "vb-datalake-01-prd.Viva_Infare.Captures"
+
+    #Borrar tabla existente
+    client.delete_table(table_id, not_found_ok=True)  # Make an API request.
+    #print("Deleted table '{}'.".format(table_id))
+
+    #Configurar tabla 
+    job_config = bigquery.LoadJobConfig(
+        schema=[
+            bigquery.SchemaField("id", "INTEGER"),
+            bigquery.SchemaField("observation_date", "DATE"),
+            bigquery.SchemaField("observation_time", "STRING"),
+            bigquery.SchemaField("pos", "STRING"),
+            bigquery.SchemaField("origin", "STRING"),
+            bigquery.SchemaField("destination", "STRING"),
+            bigquery.SchemaField("is_one_way", "INTEGER"),
+            bigquery.SchemaField("outbound_travel_stop_over", "STRING"),
+            bigquery.SchemaField("inbound_travel_stop_over", "STRING"),
+            bigquery.SchemaField("carrier", "STRING"),
+            bigquery.SchemaField("outbound_flight_no", "STRING"),
+            bigquery.SchemaField("inbound_flight_no", "STRING"),
+            bigquery.SchemaField("outbound_departure_date", "TIMESTAMP"),
+            bigquery.SchemaField("outbound_arrival_date", "TIMESTAMP"),
+            bigquery.SchemaField("inbound_departure_date", "TIMESTAMP"),
+            bigquery.SchemaField("inbound_arrival_date", "TIMESTAMP"),
+            bigquery.SchemaField("outbound_fare_basis", "STRING"),
+            bigquery.SchemaField("inbound_fare_basis", "STRING"),
+            bigquery.SchemaField("outbound_booking_class", "STRING"),
+            bigquery.SchemaField("inbound_booking_class", "STRING"),
+            bigquery.SchemaField("price_exc", "FLOAT"),
+            bigquery.SchemaField("price_inc", "FLOAT"),
+            bigquery.SchemaField("tax", "FLOAT"),
+            bigquery.SchemaField("currency", "STRING"),
+            bigquery.SchemaField("source", "STRING"),
+            bigquery.SchemaField("price_outbound", "FLOAT"),
+            bigquery.SchemaField("price_inbound", "FLOAT"),
+            bigquery.SchemaField("is_tax_inc_outin", "INTEGER")    
+        ],
+        skip_leading_rows=1,
+    )
+
+    uri = "gs://vb-infarecargamanual001/*.csv"
+
+    load_job = client.load_table_from_uri(
+        uri, table_id, job_config=job_config
+    )  # Make an API request.
+
+    load_job.result()  # Wait for the job to complete.
+
+    table = client.get_table(table_id)
+    #print("Loaded {} rows to table {}".format(table.num_rows, table_id))
+
+    ftp.quit()
+
+    Resultado='Success'
+
+    return Resultado
